@@ -1,0 +1,15 @@
+{
+  "request_id": "test-20251130-01",
+  "depots": [
+    { "id": "depot-1", "lat": 25.2048, "lng": 55.2708 }
+  ],
+  "vehicles": [
+    { "id": "veh-1", "vehicle_type": "van", "capacity_kg": 1500, "speed_kmph": 60, "cost_per_km": 0.7 }
+  ],
+  "stops": [
+    { "id": "s1", "type": "delivery", "lat": 25.1972, "lng": 55.2744, "weight_kg": 200, "service_minutes": 10 },
+    { "id": "s2", "type": "delivery", "lat": 25.1995, "lng": 55.2647, "weight_kg": 300, "service_minutes": 15 }
+  ],
+  "constraints": { "max_route_duration_minutes": 480 }
+}
+

@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    url: jdbc:sqlserver://localhost:1433;database=optimizer;encrypt=false;trustServerCertificate=true
+    username: sa
+    password: Your_strong!Passw0rd
+  jpa:
+    show-sql: true
+
+logging:
+  level:
+    root: INFO
+    com.logistics.optimizer: DEBUG
+

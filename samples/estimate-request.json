@@ -1,0 +1,8 @@
+{
+  "depot": { "lat": 25.2048, "lng": 55.2708 },
+  "vehicle_type": "van",
+  "stops": [
+    { "id": "stop-1", "type": "delivery", "lat": 25.1972, "lng": 55.2744, "weight_kg": 300 }
+  ]
+}
+

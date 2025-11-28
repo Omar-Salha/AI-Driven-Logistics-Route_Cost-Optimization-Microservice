@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: ${AZURE_SQL_URL}
+    username: ${AZURE_SQL_USER}
+    password: ${AZURE_SQL_PASSWORD}
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+
+logging:
+  level:
+    root: INFO
+  pattern:
+    console: "%d{ISO8601} %p %c{1.} - %m%n"
+

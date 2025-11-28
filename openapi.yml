@@ -1,0 +1,208 @@
+openapi: 3.0.1
+info:
+  title: Logistics Route Optimizer API
+  version: "1.0.0"
+  description: REST interface for route optimization, cost estimation, and shipment management.
+servers:
+  - url: https://optimizer.example.com/api/v1
+    description: Production
+  - url: http://localhost:8080/api/v1
+    description: Local
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Coordinate:
+      type: object
+      required: [lat, lng]
+      properties:
+        lat: { type: number, format: double }
+        lng: { type: number, format: double }
+    Stop:
+      type: object
+      required: [id, type, lat, lng]
+      properties:
+        id: { type: string }
+        type: { type: string, enum: [pickup, delivery] }
+        lat: { type: number }
+        lng: { type: number }
+        weight_kg: { type: number }
+        service_minutes: { type: integer }
+        earliest_arrival: { type: string, format: date-time }
+        latest_arrival: { type: string, format: date-time }
+    Vehicle:
+      type: object
+      required: [id, capacity_kg]
+      properties:
+        id: { type: string }
+        vehicle_type: { type: string }
+        capacity_kg: { type: number }
+        speed_kmph: { type: number }
+        cost_per_km: { type: number }
+        cost_per_hour: { type: number }
+    OptimizeRequest:
+      type: object
+      required: [request_id, depots, vehicles, stops]
+      properties:
+        request_id: { type: string }
+        depots:
+          type: array
+          items: { $ref: "#/components/schemas/Coordinate" }
+        vehicles:
+          type: array
+          items: { $ref: "#/components/schemas/Vehicle" }
+        stops:
+          type: array
+          items: { $ref: "#/components/schemas/Stop" }
+        constraints:
+          type: object
+          properties:
+            max_route_duration_minutes: { type: integer }
+            allow_over_capacity: { type: boolean }
+            max_stops_per_vehicle: { type: integer }
+    Route:
+      type: object
+      properties:
+        route_id: { type: string }
+        vehicle_id: { type: string }
+        sequence:
+          type: array
+          items: { type: string }
+        distance_km: { type: number }
+        duration_minutes: { type: integer }
+        cost: { type: number }
+        eta: { type: string, format: date-time }
+    OptimizeResponse:
+      type: object
+      properties:
+        optimization_run_id: { type: string, format: uuid }
+        status: { type: string }
+        routes:
+          type: array
+          items: { $ref: "#/components/schemas/Route" }
+        metrics:
+          type: object
+          properties:
+            total_distance_km: { type: number }
+            total_duration_minutes: { type: integer }
+            total_cost: { type: number }
+        mode: { type: string, enum: [sync, async] }
+        warning: { type: string }
+paths:
+  /optimize:
+    post:
+      summary: Optimize routes
+      operationId: optimize
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OptimizeRequest"
+      responses:
+        "200":
+          description: Completed optimization
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OptimizeResponse"
+        "202":
+          description: Optimization scheduled asynchronously
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OptimizeResponse"
+  /estimate-cost:
+    post:
+      summary: Estimate cost/ETA
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                depot: { $ref: "#/components/schemas/Coordinate" }
+                vehicle_type: { type: string }
+                stops:
+                  type: array
+                  items: { $ref: "#/components/schemas/Stop" }
+      responses:
+        "200":
+          description: Cost estimate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  estimated_distance_km: { type: number }
+                  estimated_duration_minutes: { type: integer }
+                  estimated_cost: { type: number }
+                  eta: { type: string, format: date-time }
+  /shipments:
+    post:
+      summary: Create shipment
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                external_ref: { type: string }
+                stops:
+                  type: array
+                  items: { $ref: "#/components/schemas/Stop" }
+      responses:
+        "201":
+          description: Shipment created
+  /shipments/{id}:
+    get:
+      summary: Get shipment
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Shipment details
+  /optimizations/{id}:
+    get:
+      summary: Fetch optimization run
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Optimization run details
+  /admin/recompute:
+    post:
+      summary: Trigger recompute
+      security:
+        - bearerAuth: []
+      responses:
+        "202":
+          description: Recompute queued
+  /health:
+    get:
+      summary: Health check
+      responses:
+        "200":
+          description: OK
+

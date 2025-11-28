@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  optimizer:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      AZURE_SQL_URL: jdbc:sqlserver://mssql:1433;database=optimizer;encrypt=false;trustServerCertificate=true
+      AZURE_SQL_USER: sa
+      AZURE_SQL_PASSWORD: Your_strong!Passw0rd
+      JWT_JWK_ENDPOINT: ${JWT_JWK_ENDPOINT:-https://login.microsoftonline.com/common/discovery/v2.0/keys}
+      JWT_AUDIENCE: optimizer-api
+      JWT_ISSUER: https://login.microsoftonline.com/common/v2.0
+    depends_on:
+      - mssql
+
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "Your_strong!Passw0rd"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+
